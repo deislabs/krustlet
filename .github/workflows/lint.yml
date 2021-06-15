@@ -21,5 +21,9 @@ jobs:
           node-version: '14'
       - name: Install markdownlint
         run: npm install -g markdownlint-cli
+      - name: Install markdownlint
+        run: npm install -g markdown-link-check
       - name: markdownlint
+        run: just lint-docs
+      - name: markdown-link-check
         run: just lint-docs

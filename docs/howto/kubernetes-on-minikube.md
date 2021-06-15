@@ -5,7 +5,7 @@ This tutorial will focus on using a tool called
 
 If you haven't installed them already, go ahead and [install VirtualBox 5.2 or
 higher](https://www.virtualbox.org/), [install
-minikube](https://minikube.sigs.k8s.io/docs/start/linux/), and [install
+minikube](https://minikube.sigs.k8s.io/docs/start/), and [install
 kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/).
 
 You'll need `kubectl` to interact with the cluster once it's created.

@@ -14,6 +14,9 @@ build +FLAGS='':
 lint-docs:
     markdownlint '**/*.md' -c .markdownlint.json
 
+linkcheck-docs:
+    find . -name \*.md | xargs -I{} markdown-link-check -c .markdownlinkcheck.json {} 
+
 test:
     cargo fmt --all -- --check
     cargo clippy --workspace

@@ -44,7 +44,7 @@ bindings provided in AssemblyScript.
 
 If you are interested in starting your own AssemblyScript project, visit the
 AssemblyScript
-[getting started guide](https://docs.assemblyscript.org/quick-start).
+[getting started guide](https://www.assemblyscript.org/).
 
 If you don't have Krustlet with the WASI provider running locally, see the
 instructions in the [tutorial](../../../docs/intro/tutorial03.md) for running

@@ -20,7 +20,7 @@ install Krustlet on your own Kubernetes cluster.
 For production use:
 
 - [Azure](../howto/krustlet-on-azure.md)
-- [Amazon Elastic Kubernetes Service (EKS)](../howto/kubernetes-on-eks.md)
+- [Amazon Elastic Kubernetes Service (EKS)](../howto/krustlet-on-eks.md)
 
 For development and evaluation purposes, it may make sense to use a VM-based
 Kubernetes cluster for quick and easy setup and teardown:
