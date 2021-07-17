@@ -16,7 +16,7 @@ use anyhow::Context;
 use futures_util::future;
 use futures_util::stream::StreamExt;
 use hyperx::header::Header;
-use reqwest::header::HeaderMap;
+use reqwest::{header::HeaderMap, Url};
 use serde::Deserialize;
 use sha2::Digest;
 use std::collections::HashMap;
@@ -573,11 +573,16 @@ impl Client {
         image: &Reference,
         digest: &str,
     ) -> anyhow::Result<String> {
-        let url = format!("{}&digest={}", location, digest);
+        let url = Url::parse_with_params(location, &[("digest", digest)])?;
         let mut close_headers = self.auth_headers(image);
         close_headers.insert("Content-Length", "0".parse().unwrap());
 
-        let res = self.client.put(&url).headers(close_headers).send().await?;
+        let res = self
+            .client
+            .put(url.as_str())
+            .headers(close_headers)
+            .send()
+            .await?;
         self.extract_location_header(&image, res, &reqwest::StatusCode::CREATED)
             .await
     }
