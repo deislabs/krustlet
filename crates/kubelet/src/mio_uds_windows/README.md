@@ -54,7 +54,7 @@ Support for Unix domain sockets was introduced in Windows 10
 
 ## License
 
-This project is licensed under MIT license ([LICENSE-MIT](LICENSE-MIT) or
+This project is licensed under MIT license ([LICENSE-MIT](LICENSE) or
 [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT)).
 
 ## Contributing
