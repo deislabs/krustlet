@@ -65,22 +65,20 @@ pub enum OciErrorCode {
     ///
     /// This error is returned when the manifest, identified by name and tag is unknown to the repository.
     ManifestUnknown,
-    /// Manifest failed signature validation
-    ManifestUnverified,
     /// Invalid repository name
     NameInvalid,
     /// Repository name is not known
     NameUnknown,
     /// Provided length did not match content length
     SizeInvalid,
-    /// Manifest tag did not match URI
-    TagInvalid,
     /// Authentication required.
     Unauthorized,
     /// Requested access to the resource is denied
     Denied,
     /// This operation is unsupported
     Unsupported,
+    /// Too many requests from client
+    Toomanyrequests,
 }
 
 #[cfg(test)]
