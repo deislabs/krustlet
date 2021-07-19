@@ -710,7 +710,7 @@ mod test {
         assert_eq!(config.data_dir.to_string_lossy(), "/krusty/data/dir");
         assert_eq!(format!("{}", config.node_ip), "173.183.193.2");
         assert_eq!(config.max_pods, 400);
-        assert_eq!(config.allow_local_modules, true);
+        assert!(config.allow_local_modules);
         assert_eq!(config.node_labels.len(), 2);
         assert_eq!(config.node_labels.get("label1"), Some(&("val1".to_owned())));
         assert_eq!(config.insecure_registries.clone().unwrap().len(), 2);
@@ -775,7 +775,7 @@ mod test {
         assert_eq!(config.hostname, "fallback-hostname");
         assert_eq!(config.data_dir.to_string_lossy(), "/fallback/data/dir");
         assert_eq!(format!("{}", config.node_ip), "4.4.4.4");
-        assert_eq!(config.allow_local_modules, false);
+        assert!(!config.allow_local_modules);
         assert_eq!(config.insecure_registries, None);
         assert_eq!(config.node_labels.len(), 0);
         assert_eq!(
@@ -855,7 +855,7 @@ mod test {
         assert_eq!(config.max_pods, 30);
         assert_eq!(config.data_dir.to_string_lossy(), "/krusty/data/dir/2");
         assert_eq!(format!("{}", config.node_ip), "173.183.193.22");
-        assert_eq!(config.allow_local_modules, false);
+        assert!(!config.allow_local_modules);
         assert_eq!(config.insecure_registries.clone().unwrap().len(), 1);
         assert_eq!(&config.insecure_registries.clone().unwrap()[0], "local");
         assert_eq!(config.node_labels.len(), 2);
@@ -910,7 +910,7 @@ mod test {
         assert_eq!(config.hostname, "krusty-host");
         assert_eq!(config.data_dir.to_string_lossy(), "/krusty/data/dir");
         assert_eq!(format!("{}", config.node_ip), "173.183.193.2");
-        assert_eq!(config.allow_local_modules, true);
+        assert!(config.allow_local_modules);
         assert_eq!(config.insecure_registries.clone().unwrap().len(), 1);
         assert_eq!(&config.insecure_registries.clone().unwrap()[0], "local");
         assert_eq!(config.node_labels.len(), 2);

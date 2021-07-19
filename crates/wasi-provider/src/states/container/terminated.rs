@@ -21,11 +21,11 @@ impl Terminated {
 
 #[async_trait::async_trait]
 impl State<ContainerState> for Terminated {
-    #[instrument(level = "info", skip(self, _shared_state, state, container), fields(pod_name = state.pod.name(), container_name))]
+    #[instrument(level = "info", skip(self, _shared_state, _state, container), fields(pod_name = _state.pod.name(), container_name))]
     async fn next(
         self: Box<Self>,
         _shared_state: SharedState<ProviderState>,
-        state: &mut ContainerState,
+        _state: &mut ContainerState,
         container: Manifest<Container>,
     ) -> Transition<ContainerState> {
         let container = container.latest();

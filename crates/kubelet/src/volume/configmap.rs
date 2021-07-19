@@ -10,7 +10,7 @@ pub struct ConfigMapVolume {
     vol_name: String,
     cm_name: String,
     client: kube::Api<ConfigMap>,
-    items: Option<Vec<KeyToPath>>,
+    items: Vec<KeyToPath>,
     mounted_path: Option<PathBuf>,
 }
 
@@ -42,11 +42,26 @@ impl ConfigMapVolume {
     /// Mounts the ConfigMap volume in the given directory. The actual path will be
     /// $BASE_PATH/$VOLUME_NAME
     pub async fn mount(&mut self, base_path: impl AsRef<Path>) -> anyhow::Result<()> {
-        let config_map = self.client.get(&self.cm_name).await?;
         let path = base_path.as_ref().join(&self.vol_name);
         tokio::fs::create_dir_all(&path).await?;
 
-        let binary_data = config_map.binary_data.unwrap_or_default();
+        self.mount_at(path.clone()).await?;
+
+        // Set configmap directory to read-only.
+        let mut perms = tokio::fs::metadata(&path).await?.permissions();
+        perms.set_readonly(true);
+        tokio::fs::set_permissions(path, perms).await?;
+
+        Ok(())
+    }
+
+    /// A function for mounting the file(s) at the given path. It mainly exists to allow the
+    /// projected volumes to mount everything at the same level. The given path must be a directory
+    /// and already exist. This method will not set any permissions, so the caller is responsible
+    /// for setting permissions on the directory
+    pub(crate) async fn mount_at(&mut self, path: PathBuf) -> anyhow::Result<()> {
+        let config_map = self.client.get(&self.cm_name).await?;
+        let binary_data = config_map.binary_data;
         let binary_data = binary_data
             .into_iter()
             .filter_map(
@@ -58,7 +73,7 @@ impl ConfigMapVolume {
             .map(|(file_path, data)| async move { tokio::fs::write(file_path, &data).await });
         let binary_data = futures::future::join_all(binary_data);
 
-        let data = config_map.data.unwrap_or_default();
+        let data = config_map.data;
         let data = data
             .into_iter()
             .filter_map(|(key, data)| match mount_setting_for(&key, &self.items) {
@@ -74,11 +89,6 @@ impl ConfigMapVolume {
             .chain(data)
             .collect::<tokio::io::Result<_>>()?;
 
-        // Set configmap directory to read-only.
-        let mut perms = tokio::fs::metadata(&path).await?.permissions();
-        perms.set_readonly(true);
-        tokio::fs::set_permissions(&path, perms).await?;
-
         // Update the mounted directory
         self.mounted_path = Some(path);
 
@@ -90,6 +100,12 @@ impl ConfigMapVolume {
     pub async fn unmount(&mut self) -> anyhow::Result<()> {
         match self.mounted_path.take() {
             Some(p) => {
+                // Because things are set to read only, we need to remove the read only flag so it
+                // can be deleted
+                let mut perms = tokio::fs::metadata(&p).await?.permissions();
+                perms.set_readonly(false);
+                tokio::fs::set_permissions(&p, perms).await?;
+
                 //although remove_dir_all crate could default to std::fs::remove_dir_all for unix family, we still prefer std::fs implemetation for unix
                 #[cfg(target_family = "windows")]
                 tokio::task::spawn_blocking(|| remove_dir_all::remove_dir_all(p)).await??;

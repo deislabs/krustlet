@@ -128,18 +128,20 @@ async fn bootstrap_auth<K: AsRef<Path>>(
             };
 
             if let Some(cert) = status.certificate {
-                if let Some(v) = status.conditions {
-                    if v.into_iter().any(|c| c.type_.as_str() == APPROVED_TYPE) {
-                        debug!("Certificate has been approved, generating kubeconfig");
-                        generated_kubeconfig = gen_kubeconfig(
-                            ca_data,
-                            server,
-                            cert,
-                            cert_bundle.serialize_private_key_pem(),
-                        )?;
-                        got_cert = true;
-                        break;
-                    }
+                if status
+                    .conditions
+                    .into_iter()
+                    .any(|c| c.type_.as_str() == APPROVED_TYPE)
+                {
+                    debug!("Certificate has been approved, generating kubeconfig");
+                    generated_kubeconfig = gen_kubeconfig(
+                        ca_data,
+                        server,
+                        cert,
+                        cert_bundle.serialize_private_key_pem(),
+                    )?;
+                    got_cert = true;
+                    break;
                 }
             }
 
@@ -243,13 +245,15 @@ async fn bootstrap_tls(
         };
 
         if let Some(cert) = status.certificate {
-            if let Some(v) = status.conditions {
-                if v.into_iter().any(|c| c.type_.as_str() == APPROVED_TYPE) {
-                    debug!("Certificate has been approved, extracting cert from response");
-                    certificate = std::str::from_utf8(&cert.0)?.to_owned();
-                    got_cert = true;
-                    break;
-                }
+            if status
+                .conditions
+                .into_iter()
+                .any(|c| c.type_.as_str() == APPROVED_TYPE)
+            {
+                debug!("Certificate has been approved, extracting cert from response");
+                certificate = std::str::from_utf8(&cert.0)?.to_owned();
+                got_cert = true;
+                break;
             }
         }
         info!(remaining = ?start.elapsed(), "Got modified event, but CSR for serving certs is not currently approved");

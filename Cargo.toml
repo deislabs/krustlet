@@ -1,82 +1,79 @@
 [package]
-name = "krustlet"
-version = "0.7.0"
 authors = [
-    "Matt Butcher <matt.butcher@microsoft.com>",
-    "Matthew Fisher <matt.fisher@microsoft.com>",
-    "Radu Matei <radu.matei@microsoft.com>",
-    "Taylor Thomas <taylor.thomas@microsoft.com>",
-    "Brian Ketelsen <Brian.Ketelsen@microsoft.com>",
-    "Brian Hardock <Brian.Hardock@microsoft.com>",
-    "Ryan Levick <rylevick@microsoft.com>",
-    "Kevin Flansburg <kevin.flansburg@gmail.com>",
+  "Matt Butcher <matt.butcher@microsoft.com>",
+  "Matthew Fisher <matt.fisher@microsoft.com>",
+  "Radu Matei <radu.matei@microsoft.com>",
+  "Taylor Thomas <taylor.thomas@microsoft.com>",
+  "Brian Ketelsen <Brian.Ketelsen@microsoft.com>",
+  "Brian Hardock <Brian.Hardock@microsoft.com>",
+  "Ryan Levick <rylevick@microsoft.com>",
+  "Kevin Flansburg <kevin.flansburg@gmail.com>",
 ]
-edition = "2018"
 default-run = "krustlet-wasi"
-license = "Apache-2.0"
-license-file = "LICENSE"
 description = "A Kubernetes kubelet implementation in Rust, used for running WebAssembly modules in Kubernetes"
-repository = "https://github.com/deislabs/krustlet"
 documentation = "https://github.com/deislabs/krustlet/tree/master/docs"
-readme = "README.md"
-keywords = ["wasm", "wasi", "webassembly", "kubernetes"]
+edition = "2018"
 exclude = ["docs/*", "demos/*", ".github/*", ".gitignore"]
+keywords = ["wasm", "wasi", "webassembly", "kubernetes"]
+license = "Apache-2.0"
+name = "krustlet"
+readme = "README.md"
+repository = "https://github.com/deislabs/krustlet"
+version = "0.7.0"
 
 [badges]
-maintenance = { status = "actively-developed" }
+maintenance = {status = "actively-developed"}
 
 [features]
 default = ["native-tls"]
 native-tls = [
-    "kube/native-tls",
-    "kube-runtime/native-tls",
-    "krator/kube-native-tls",
-    "kubelet/kube-native-tls",
-    "wasi-provider/native-tls",
-    "oci-distribution/native-tls",
+  "kube/native-tls",
+  "krator/kube-native-tls",
+  "kubelet/kube-native-tls",
+  "wasi-provider/native-tls",
+  "oci-distribution/native-tls",
 ]
 rustls-tls = [
-    "kube/rustls-tls",
-    "kube-runtime/rustls-tls",
-    "krator/rustls-tls",
-    "kubelet/rustls-tls",
-    "wasi-provider/rustls-tls",
-    "oci-distribution/rustls-tls",
+  "kube/rustls-tls",
+  "krator/rustls-tls",
+  "kubelet/rustls-tls",
+  "wasi-provider/rustls-tls",
+  "oci-distribution/rustls-tls",
 ]
 
 [dependencies]
 anyhow = "1.0"
-tokio = { version = "1.0", features = ["macros", "rt-multi-thread", "time"] }
-kube = { version = "0.55", default-features = false }
-k8s-openapi = { version = "0.11", default-features = false, features = ["v1_20"] }
+dirs = {package = "dirs-next", version = "2.0.0"}
 futures = "0.3"
-krator = { version = "0.3", default-features = false }
-kubelet = { path = "./crates/kubelet", version = "0.7", default-features = false, features = ["cli"] }
-wasi-provider = { path = "./crates/wasi-provider", version = "0.7", default-features = false }
-oci-distribution = { path = "./crates/oci-distribution", version = "0.6", default-features = false }
-dirs = { package = "dirs-next", version = "2.0.0" }
 hostname = "0.3"
+k8s-openapi = {version = "0.12", default-features = false, features = ["v1_21"]}
+krator = {version = "0.4", default-features = false}
+kube = {version = "0.58", default-features = false}
+kubelet = {path = "./crates/kubelet", version = "0.7", default-features = false, features = ["cli"]}
+oci-distribution = {path = "./crates/oci-distribution", version = "0.6", default-features = false}
 regex = "1.3"
-tracing-subscriber = "0.2"
 serde = "1.0"
+tokio = {version = "1.0", features = ["macros", "rt-multi-thread", "time"]}
+tracing-subscriber = "0.2"
+wasi-provider = {path = "./crates/wasi-provider", version = "0.7", default-features = false}
 
 [dev-dependencies]
+async-trait = "0.1"
+compiletest_rs = "0.6"
+k8s-csi = "0.3"
+kube-runtime = {version = "0.58", default-features = false}
+reqwest = {version = "0.11", default-features = false}
 serde_derive = "1.0"
 serde_json = "1.0"
-reqwest = { version = "0.11", default-features = false }
-kube-runtime = { version = "0.55", default-features = false }
-compiletest_rs = "0.6"
 tempfile = "3.2"
-k8s-csi = "0.3"
+tokio = {version = "1.0", features = ["macros", "rt-multi-thread", "time", "process"]}
 tonic = "0.4"
-async-trait = "0.1"
-tokio = { version = "1.0", features = ["macros", "rt-multi-thread", "time", "process"] }
 
 [workspace]
 members = [
-    "crates/kubelet",
-    "crates/oci-distribution",
-    "crates/wasi-provider",
+  "crates/kubelet",
+  "crates/oci-distribution",
+  "crates/wasi-provider",
 ]
 
 [[bin]]

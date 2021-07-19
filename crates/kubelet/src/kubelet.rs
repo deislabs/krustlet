@@ -259,10 +259,7 @@ mod test {
     use tokio::sync::RwLock;
 
     fn mock_client() -> kube::Client {
-        kube::Client::try_from(kube::Config::new(
-            reqwest::Url::parse("http://127.0.0.1:8080").unwrap(),
-        ))
-        .unwrap()
+        kube::Client::try_from(kube::Config::new("http://127.0.0.1:8080".parse().unwrap())).unwrap()
     }
 
     struct MockProvider;
@@ -328,7 +325,7 @@ mod test {
     #[tokio::test]
     async fn test_env_vars() {
         let container = Container::new(&KubeContainer {
-            env: Some(vec![
+            env: vec![
                 EnvVar {
                     name: "first".into(),
                     value: Some("value".into()),
@@ -400,7 +397,7 @@ mod test {
                     }),
                     ..Default::default()
                 },
-            ]),
+            ],
             ..Default::default()
         });
         let name = "my-name".to_string();
@@ -411,8 +408,8 @@ mod test {
         annotations.insert("annotation".to_string(), "value".to_string());
         let pod = Pod::from(KubePod {
             metadata: ObjectMeta {
-                labels: Some(labels),
-                annotations: Some(annotations),
+                labels,
+                annotations,
                 name: Some(name),
                 namespace,
                 ..Default::default()

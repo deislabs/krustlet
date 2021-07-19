@@ -142,10 +142,7 @@ pub mod test_utils {
     pub const UNHEALTHY: &str = "Unhealthy";
 
     pub fn mock_client() -> kube::Client {
-        kube::Client::try_from(kube::Config::new(
-            reqwest::Url::parse("http://127.0.0.1:8080").unwrap(),
-        ))
-        .unwrap()
+        kube::Client::try_from(kube::Config::new("http://127.0.0.1:8080".parse().unwrap())).unwrap()
     }
 
     /// Creates a mock kubernetes API service that the NodePatcher calls to when device plugin
@@ -182,7 +179,7 @@ pub mod test_utils {
                     .unwrap(),
             );
         });
-        let client = Client::new(mock_service);
+        let client = Client::new(mock_service, "default");
         (client, spawned)
     }
 

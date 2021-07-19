@@ -138,22 +138,22 @@ impl Container {
     }
 
     /// Get arguments of container.
-    pub fn args(&self) -> &Option<Vec<String>> {
+    pub fn args(&self) -> &Vec<String> {
         &self.0.args
     }
 
     /// Get command of container.
-    pub fn command(&self) -> &Option<Vec<String>> {
+    pub fn command(&self) -> &Vec<String> {
         &self.0.command
     }
 
     /// Get environment of container.
-    pub fn env(&self) -> &Option<Vec<k8s_openapi::api::core::v1::EnvVar>> {
+    pub fn env(&self) -> &Vec<k8s_openapi::api::core::v1::EnvVar> {
         &self.0.env
     }
 
     /// Get environment of container.
-    pub fn env_from(&self) -> &Option<Vec<k8s_openapi::api::core::v1::EnvFromSource>> {
+    pub fn env_from(&self) -> &Vec<k8s_openapi::api::core::v1::EnvFromSource> {
         &self.0.env_from
     }
 
@@ -186,7 +186,7 @@ impl Container {
     }
 
     /// Get ports of container.
-    pub fn ports(&self) -> &Option<Vec<k8s_openapi::api::core::v1::ContainerPort>> {
+    pub fn ports(&self) -> &Vec<k8s_openapi::api::core::v1::ContainerPort> {
         &self.0.ports
     }
 
@@ -236,12 +236,12 @@ impl Container {
     }
 
     /// Get volume devices of container.
-    pub fn volume_devices(&self) -> &Option<Vec<k8s_openapi::api::core::v1::VolumeDevice>> {
+    pub fn volume_devices(&self) -> &Vec<k8s_openapi::api::core::v1::VolumeDevice> {
         &self.0.volume_devices
     }
 
     /// Get volume mounts of container.
-    pub fn volume_mounts(&self) -> &Option<Vec<k8s_openapi::api::core::v1::VolumeMount>> {
+    pub fn volume_mounts(&self) -> &Vec<k8s_openapi::api::core::v1::VolumeMount> {
         &self.0.volume_mounts
     }
 

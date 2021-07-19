@@ -45,6 +45,9 @@ pub enum WasmerciserVolumeSource {
     ConfigMapItems(&'static str, Vec<(&'static str, &'static str)>),
     Secret(&'static str),
     SecretItems(&'static str, Vec<(&'static str, &'static str)>),
+    // This expects a raw JSON string containing the vector of `sources` as the projected spec is too
+    // complex to represent simply here
+    Projected(&'static str),
     #[cfg(target_os = "linux")]
     Pvc(&'static str),
 }
@@ -136,6 +139,16 @@ fn wasmerciser_volume(
                     "secretName": name,
                     "items": items.iter().map(|(key, path)| json!({"key": key, "path": path})).collect::<Vec<_>>(),
                 }
+            }))?;
+
+            Ok((volume, None))
+        }
+        WasmerciserVolumeSource::Projected(raw) => {
+            let volume: Volume = serde_json::from_value(json!({
+                "name": spec.volume_name,
+                "projected": {
+                    "sources": serde_json::from_str::<'_, serde_json::Value>(raw)?,
+                },
             }))?;
 
             Ok((volume, None))

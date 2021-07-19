@@ -55,7 +55,7 @@ pub async fn pod_exited_successfully(pods: &Api<Pod>, pod_name: &str) -> anyhow:
     let pod = pods.get(pod_name).await?;
 
     let state = (|| {
-        pod.status?.container_statuses?[0]
+        pod.status?.container_statuses[0]
             .state
             .as_ref()?
             .terminated
@@ -104,7 +104,7 @@ pub async fn main_container_exited_with_failure(
     let pod = pods.get(pod_name).await?;
 
     let state = (|| {
-        pod.status?.container_statuses?[0]
+        pod.status?.container_statuses[0]
             .state
             .as_ref()?
             .terminated

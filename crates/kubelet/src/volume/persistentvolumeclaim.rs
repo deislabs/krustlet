@@ -286,7 +286,7 @@ impl PvcVolume {
 // Validates a PersistentVolumeClaimSpec.
 // https://github.com/kubernetes/kubernetes/blob/c970a46bc1bcc100bbbfabd5c12bd4c5d87f8aea/pkg/apis/core/validation/validation.go#L1965
 pub(crate) fn validate(spec: &PersistentVolumeClaimSpec) -> anyhow::Result<()> {
-    validate_access_modes(spec.access_modes.as_ref())?;
+    validate_access_modes(&spec.access_modes)?;
 
     validate_label_selector(spec.selector.as_ref())?;
 
@@ -299,20 +299,15 @@ pub(crate) fn validate(spec: &PersistentVolumeClaimSpec) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn validate_access_modes(modes: Option<&Vec<String>>) -> anyhow::Result<()> {
-    match modes {
-        Some(a) => {
-            if a.is_empty() {
-                Err(anyhow::anyhow!("at least 1 access mode is required"))
-            } else {
-                for access_mode in a {
-                    // validate access modes are correct
-                    AccessMode::from_str(access_mode)?;
-                }
-                Ok(())
-            }
+fn validate_access_modes(modes: &[String]) -> anyhow::Result<()> {
+    if modes.is_empty() {
+        Err(anyhow::anyhow!("at least 1 access mode is required"))
+    } else {
+        for access_mode in modes {
+            // validate access modes are correct
+            AccessMode::from_str(access_mode)?;
         }
-        None => Err(anyhow::anyhow!("at least 1 access mode is required")),
+        Ok(())
     }
 }
 
@@ -553,7 +548,6 @@ async fn get_secrets_map(
             let secret = secret_client.get(&name).await?;
             secret
                 .data
-                .unwrap_or_default()
                 .into_iter()
                 .map(|(k, v)| {
                     // NOTE: So the CSI API wants the secret values as Strings. However, secrets can be

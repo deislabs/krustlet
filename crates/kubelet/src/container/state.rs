@@ -99,7 +99,7 @@ pub async fn run_to_completion<S: ObjectState<Manifest = Container, Status = Sta
                     Err(e) => {
                         warn!(
                             error = %e,
-                            "Pod containerstatus patch request returned error"
+                            "Pod container status patch request returned error"
                         );
                     }
                 }

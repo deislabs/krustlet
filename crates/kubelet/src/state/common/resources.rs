@@ -51,16 +51,13 @@ impl<P: GenericProvider> State<P::PodState> for Resources<P> {
             let mut container_devices: PodResourceRequests = HashMap::new();
             for container in pod.all_containers() {
                 if let Some(resources) = container.resources() {
-                    if let Some(requests) = &resources.requests {
-                        let extended_resources: HashMap<String, Quantity> = requests
-                            .clone()
-                            .into_iter()
-                            .filter(|(resource_name, _)| {
-                                util::is_extended_resource_name(resource_name)
-                            })
-                            .collect();
-                        container_devices.insert(container.name().to_string(), extended_resources);
-                    }
+                    let extended_resources: HashMap<String, Quantity> = resources
+                        .requests
+                        .iter()
+                        .filter(|(resource_name, _)| util::is_extended_resource_name(resource_name))
+                        .map(|(k, v)| (k.clone(), v.clone()))
+                        .collect();
+                    container_devices.insert(container.name().to_string(), extended_resources);
                 }
             }
             // Do allocate for this Pod

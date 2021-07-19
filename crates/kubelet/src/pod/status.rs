@@ -5,7 +5,6 @@ use crate::container::make_initial_container_status;
 use k8s_openapi::api::core::v1::ContainerStatus as KubeContainerStatus;
 use k8s_openapi::api::core::v1::Pod as KubePod;
 use k8s_openapi::api::core::v1::PodCondition as KubePodCondition;
-use k8s_openapi::api::core::v1::PodStatus as KubePodStatus;
 use krator::{Manifest, ObjectStatus};
 use kube::api::PatchParams;
 use kube::Api;
@@ -75,16 +74,8 @@ pub async fn initialize_pod_container_statuses(
                 .clone()
                 .unwrap_or_default();
 
-            let num_statuses = status
-                .container_statuses
-                .as_ref()
-                .map(|statuses| statuses.len())
-                .unwrap_or(0);
-            let num_init_statuses = status
-                .init_container_statuses
-                .as_ref()
-                .map(|statuses| statuses.len())
-                .unwrap_or(0);
+            let num_statuses = status.container_statuses.len();
+            let num_init_statuses = status.init_container_statuses.len();
 
             if (num_statuses == num_containers) && (num_init_statuses == num_init_containers) {
                 break 'main Ok(());
@@ -145,33 +136,47 @@ pub fn make_status_with_containers(
 
 #[derive(Debug, Default)]
 /// Pod Status wrapper.
-pub struct Status(KubePodStatus);
+pub struct Status {
+    phase: Option<String>,
+    reason: Option<String>,
+    message: Option<String>,
+    container_statuses: Option<Vec<KubeContainerStatus>>,
+    init_container_statuses: Option<Vec<KubeContainerStatus>>,
+    conditions: Option<Vec<KubePodCondition>>,
+}
 
 #[derive(Default)]
 /// Builder for Pod Status wrapper.
-pub struct StatusBuilder(KubePodStatus);
+pub struct StatusBuilder {
+    phase: Option<String>,
+    reason: Option<String>,
+    message: Option<String>,
+    container_statuses: Option<Vec<KubeContainerStatus>>,
+    init_container_statuses: Option<Vec<KubeContainerStatus>>,
+    conditions: Option<Vec<KubePodCondition>>,
+}
 
 impl StatusBuilder {
     /// Create a new status with no fields set.
     pub fn new() -> Self {
-        StatusBuilder(Default::default())
+        Self::default()
     }
 
     /// Set Pod phase.
     pub fn phase(mut self, phase: Phase) -> StatusBuilder {
-        self.0.phase = Some(format!("{}", phase));
+        self.phase = Some(format!("{}", phase));
         self
     }
 
     /// Set Pod reason.
     pub fn reason(mut self, reason: &str) -> StatusBuilder {
-        self.0.reason = Some(reason.to_string());
+        self.reason = Some(reason.to_string());
         self
     }
 
     /// Set Pod message.
     pub fn message(mut self, message: &str) -> StatusBuilder {
-        self.0.message = Some(message.to_string());
+        self.message = Some(message.to_string());
         self
     }
 
@@ -180,7 +185,7 @@ impl StatusBuilder {
         mut self,
         container_statuses: Vec<KubeContainerStatus>,
     ) -> StatusBuilder {
-        self.0.container_statuses = Some(container_statuses);
+        self.container_statuses = Some(container_statuses);
         self
     }
 
@@ -189,19 +194,29 @@ impl StatusBuilder {
         mut self,
         init_container_statuses: Vec<KubeContainerStatus>,
     ) -> StatusBuilder {
-        self.0.init_container_statuses = Some(init_container_statuses);
+        self.init_container_statuses = Some(init_container_statuses);
         self
     }
 
     /// Set Pod conditions.
     pub fn conditions(mut self, conditions: Vec<KubePodCondition>) -> StatusBuilder {
-        self.0.conditions = Some(conditions);
+        self.conditions = Some(conditions);
         self
     }
 
     /// Finalize Pod Status from builder.
     pub fn build(self) -> Status {
-        Status(self.0)
+        // NOTE: Right now this is basically the same as just implementing it on `Status` (i.e. they
+        // have the same fields). We are retaining this builder for future API flexibility where we
+        // might want to apply defaults or other transformations
+        Status {
+            phase: self.phase,
+            reason: self.reason,
+            message: self.message,
+            container_statuses: self.container_statuses,
+            init_container_statuses: self.init_container_statuses,
+            conditions: self.conditions,
+        }
     }
 }
 
@@ -237,29 +252,31 @@ impl Default for Phase {
 impl ObjectStatus for Status {
     fn json_patch(&self) -> serde_json::Value {
         let mut status = serde_json::Map::new();
-        if let Some(s) = self.0.phase.clone() {
+        if let Some(s) = self.phase.clone() {
             status.insert("phase".to_string(), serde_json::Value::String(s));
-        };
+        }
 
-        if let Some(s) = self.0.message.clone() {
+        if let Some(s) = self.message.clone() {
             status.insert("message".to_string(), serde_json::Value::String(s));
-        };
+        }
 
-        if let Some(s) = self.0.reason.clone() {
+        if let Some(s) = self.reason.clone() {
             status.insert("reason".to_string(), serde_json::Value::String(s));
-        };
+        }
 
-        if let Some(s) = self.0.container_statuses.clone() {
+        // NOTE: We only insert the vecs if specified. Otherwise the merge patch will overwrite
+        // things with empty vecs
+        if let Some(s) = self.container_statuses.clone() {
             status.insert("containerStatuses".to_string(), serde_json::json!(s));
-        };
+        }
 
-        if let Some(s) = self.0.init_container_statuses.clone() {
+        if let Some(s) = self.init_container_statuses.clone() {
             status.insert("initContainerStatuses".to_string(), serde_json::json!(s));
-        };
+        }
 
-        if let Some(s) = self.0.conditions.clone() {
-            status.insert("conditions".to_string(), serde_json::json!(s));
-        };
+        if let Some(c) = self.conditions.clone() {
+            status.insert("conditions".to_string(), serde_json::json!(c));
+        }
 
         serde_json::json!(
             {

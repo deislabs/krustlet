@@ -655,14 +655,14 @@ impl Builder {
     pub fn build(self) -> Node {
         let metadata = k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta {
             name: Some(self.name),
-            annotations: Some(self.annotations),
-            labels: Some(self.labels),
+            annotations: self.annotations,
+            labels: self.labels,
             ..Default::default()
         };
 
         let spec = k8s_openapi::api::core::v1::NodeSpec {
             pod_cidr: Some(self.pod_cidr),
-            taints: Some(self.taints),
+            taints: self.taints,
             ..Default::default()
         };
 
@@ -677,15 +677,15 @@ impl Builder {
 
         let status = k8s_openapi::api::core::v1::NodeStatus {
             node_info: Some(node_info),
-            capacity: Some(self.capacity),
-            allocatable: Some(self.allocatable),
+            capacity: self.capacity,
+            allocatable: self.allocatable,
             daemon_endpoints: Some(k8s_openapi::api::core::v1::NodeDaemonEndpoints {
                 kubelet_endpoint: Some(k8s_openapi::api::core::v1::DaemonEndpoint {
                     port: self.port,
                 }),
             }),
-            conditions: Some(self.conditions),
-            addresses: Some(self.addresses),
+            conditions: self.conditions,
+            addresses: self.addresses,
             ..Default::default()
         };
 

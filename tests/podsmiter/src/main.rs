@@ -73,14 +73,18 @@ async fn list_e2e_namespaces(client: kube::Client) -> anyhow::Result<Vec<String>
     let nsapi: Api<Namespace> = Api::all(client.clone());
     let nslist = nsapi.list(&ListParams::default()).await?;
 
-    Ok(nslist.iter().map(name_of).filter(is_e2e_resource).collect())
+    Ok(nslist
+        .iter()
+        .map(name_of)
+        .filter(|s| is_e2e_resource(s.as_str()))
+        .collect())
 }
 
 fn name_of(ns: &impl Metadata<Ty = ObjectMeta>) -> String {
     ns.metadata().name.as_ref().unwrap().to_owned()
 }
 
-fn is_e2e_resource(item: &String) -> bool {
+fn is_e2e_resource(item: &str) -> bool {
     E2E_NS_PREFIXES
         .iter()
         .any(|prefix| item.starts_with(prefix))
@@ -146,7 +150,7 @@ async fn list_storageclasses(client: kube::Client) -> anyhow::Result<Vec<String>
         .items
         .into_iter()
         .map(|class| class.metadata.name.unwrap_or_default())
-        .filter(is_e2e_resource)
+        .filter(|s| is_e2e_resource(s.as_str()))
         .collect())
 }
 

@@ -1,104 +1,104 @@
 [package]
-name = "kubelet"
-version = "0.7.0"
 authors = [
-    "Matt Butcher <matt.butcher@microsoft.com>",
-    "Matthew Fisher <matt.fisher@microsoft.com>",
-    "Radu Matei <radu.matei@microsoft.com>",
-    "Taylor Thomas <taylor.thomas@microsoft.com>",
-    "Brian Ketelsen <Brian.Ketelsen@microsoft.com>",
-    "Brian Hardock <Brian.Hardock@microsoft.com>",
-    "Ryan Levick <rylevick@microsoft.com>",
-    "Kevin Flansburg <kevin.flansburg@gmail.com>",
+  "Matt Butcher <matt.butcher@microsoft.com>",
+  "Matthew Fisher <matt.fisher@microsoft.com>",
+  "Radu Matei <radu.matei@microsoft.com>",
+  "Taylor Thomas <taylor.thomas@microsoft.com>",
+  "Brian Ketelsen <Brian.Ketelsen@microsoft.com>",
+  "Brian Hardock <Brian.Hardock@microsoft.com>",
+  "Ryan Levick <rylevick@microsoft.com>",
+  "Kevin Flansburg <kevin.flansburg@gmail.com>",
 ]
-edition = "2018"
-license = "Apache-2.0"
-license-file = "../../LICENSE"
 description = "A Kubernetes kubelet implementation in Rust"
-repository = "https://github.com/deislabs/krustlet"
-readme = "README.md"
+edition = "2018"
 keywords = [
-    "wasm",
-    "wasi",
-    "webassembly",
-    "kubernetes",
+  "wasm",
+  "wasi",
+  "webassembly",
+  "kubernetes",
 ]
+license = "Apache-2.0"
+name = "kubelet"
+readme = "README.md"
+repository = "https://github.com/deislabs/krustlet"
+version = "0.7.0"
 
 [badges]
-maintenance = { status = "actively-developed" }
+maintenance = {status = "actively-developed"}
 
 [features]
-default = ["kube-native-tls"]
-kube-native-tls = ["kube/native-tls", "kube-runtime/native-tls", "oci-distribution/native-tls", "reqwest/native-tls", "krator/kube-native-tls"]
-rustls-tls = ["kube/rustls-tls", "kube-runtime/rustls-tls","oci-distribution/rustls-tls", "reqwest/rustls-tls", "krator/rustls-tls"]
 cli = ["structopt"]
-docs = ["cli", "derive"]
+default = ["kube-native-tls"]
 derive = ["krator/derive"]
+docs = ["cli", "derive"]
+kube-native-tls = ["kube/native-tls", "oci-distribution/native-tls", "reqwest/native-tls", "krator/kube-native-tls"]
+rustls-tls = ["kube/rustls-tls", "oci-distribution/rustls-tls", "reqwest/rustls-tls", "krator/rustls-tls"]
 
 [dependencies]
+anyhow = "1.0"
+async-recursion = "0.3"
+async-stream = "0.3"
 async-trait = "0.1"
 base64 = "0.13"
-dirs = { package = "dirs-next", version = "2.0.0" }
-anyhow = "1.0"
-futures = { version = "0.3", default-features = false }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-serde_yaml = "0.8"
-hyper = { version = "0.14", default-features = false, features = ["stream"] }
-reqwest = { version = "0.11", default-features = false, features = ["json", "stream"]}
-tokio  = { version = "1.0", features = ["fs", "macros", "signal", "net"] }
-tokio-stream = { version="0.1", features = ["fs", "net"] }
-kube = { version = "0.55", default-features = false, features = ["jsonpatch"] }
-kube-runtime = { version= "0.55", default-features = false }
-k8s-openapi = { version = "0.11", default-features = false, features = ["v1_20"] }
-k8s-csi = "0.3" 
-chrono = { version = "0.4", features = ["serde"] }
-structopt = { version = "0.3", features = ["wrap_help"], optional = true }
+chrono = {version = "0.4", features = ["serde"]}
+dirs = {package = "dirs-next", version = "2.0.0"}
+either = "1.6"
+futures = {version = "0.3", default-features = false}
 hostname = "0.3"
-thiserror = "1.0"
-lazy_static = "1.4"
-oci-distribution = { path = "../oci-distribution", version = "0.6", default-features = false }
-url = "2.1"
-warp = { version = "0.3", features = ['tls'] }
 http = "0.2"
-regex = "1.5"
-rcgen = "0.8"
-uuid = { version = "0.8.1", features = ["v4"] }
-krator = { version = "0.3", default-features = false }
+hyper = {version = "0.14", default-features = false, features = ["stream"]}
 json-patch = "0.2"
-tempfile = "3.2"
-tonic = "0.4"
-# prost is needed for the files built by the protobuf
+k8s-csi = "0.3"
+k8s-openapi = {version = "0.12", default-features = false, features = ["v1_21", "api"]}
+krator = {version = "0.4", default-features = false}
+kube = {version = "0.58", default-features = false, features = ["jsonpatch"]}
+kube-runtime = {version = "0.58", default-features = false}
+lazy_static = "1.4"
+notify = "5.0.0-pre.3"
+oci-distribution = {path = "../oci-distribution", version = "0.6", default-features = false}
 prost = "0.7"
 prost-types = "0.7"
-notify = "5.0.0-pre.3"
-async-stream = "0.3"
-tower = { version = "0.4.2", features = ["util"] }
-tracing = { version = "0.1", features = ["log"] }
+rcgen = "0.8"
+regex = "1.5"
+reqwest = {version = "0.11", default-features = false, features = ["json", "stream"]}
+serde = {version = "1.0", features = ["derive"]}
+serde_json = "1.0"
+serde_yaml = "0.8"
+structopt = {version = "0.3", features = ["wrap_help"], optional = true}
+tempfile = "3.2"
+thiserror = "1.0"
+tokio = {version = "1.0", features = ["fs", "macros", "signal", "net"]}
+tokio-stream = {version = "0.1", features = ["fs", "net"]}
+tonic = "0.4"
+tower = {version = "0.4.2", features = ["util"]}
+tracing = {version = "0.1", features = ["log"]}
 tracing-futures = "0.2"
+url = "2.1"
+uuid = {version = "0.8.1", features = ["v4"]}
+warp = {version = "0.3", features = ['tls']}
 
 [target.'cfg(target_family = "windows")'.dependencies]
-mio = "0.6"
 iovec = "0.1.2"
-lazycell = "1"
 kernel32-sys = "0.2.2"
+lazycell = "1"
+mio = "0.6"
 miow = "0.2.1"
+remove_dir_all = "0.7.0"
+tokio-compat-02 = "0.2"
+tokio_02 = {package = "tokio", version = "0.2", features = ["fs", "macros", "signal", "net"]}
 winapi = "0.2.8"
 ws2_32-sys = "0.2.1"
-tokio-compat-02 = "0.2"
-tokio_02 = { package = "tokio", version = "0.2", features = ["fs", "macros", "signal", "net"] }
-remove_dir_all = "0.7.0"
 
 [target.'cfg(target_family = "windows")'.dev-dependencies]
 bytes = "0.3"
-env_logger = { version = "0.4", default-features = false }
+env_logger = {version = "0.4", default-features = false}
 slab = "0.4"
 version-sync = "0.5"
 
 [dev-dependencies]
-reqwest = { version = "0.11", default-features = false }
+reqwest = {version = "0.11", default-features = false}
 tempfile = "3.1"
-tower-test = "0.4" 
+tower-test = "0.4"
 
 [build-dependencies]
 tonic-build = "0.4"

@@ -169,12 +169,8 @@ pub trait Provider: Sized + Send + Sync + 'static {
         client: &kube::Client,
     ) -> HashMap<String, String> {
         let mut env = HashMap::new();
-        let vars = match container.env().as_ref() {
-            Some(e) => e,
-            None => return env,
-        };
 
-        for env_var in vars.clone().into_iter() {
+        for env_var in container.env().clone().into_iter() {
             let key = env_var.name;
             let value = match env_var.value {
                 Some(v) => v,
@@ -231,12 +227,8 @@ pub async fn env_vars(
     client: &kube::Client,
 ) -> HashMap<String, String> {
     let mut env = HashMap::new();
-    let vars = match container.env().as_ref() {
-        Some(e) => e,
-        None => return env,
-    };
 
-    for env_var in vars.clone().into_iter() {
+    for env_var in container.env().clone().into_iter() {
         let key = env_var.name;
         let value = match env_var.value {
             Some(v) => v,
@@ -276,12 +268,7 @@ async fn on_missing_env_value(
                 // I am not totally clear on what the outcome should
                 // be of a cfgmap key miss. So for now just return an
                 // empty default.
-                return cfgmap
-                    .data
-                    .unwrap_or_default()
-                    .get(&cfkey.key)
-                    .cloned()
-                    .unwrap_or_default();
+                return cfgmap.data.get(&cfkey.key).cloned().unwrap_or_default();
             }
             Err(e) => {
                 error!(error = %e, name, "Error fetching config map");
@@ -296,13 +283,12 @@ async fn on_missing_env_value(
             .get(name)
             .await
         {
-            Ok(secret) => {
+            Ok(mut secret) => {
                 // I am not totally clear on what the outcome should
                 // be of a secret key miss. So for now just return an
                 // empty default.
                 return secret
                     .data
-                    .unwrap_or_default()
                     .remove(&seckey.key)
                     .map(|s| String::from_utf8(s.0).unwrap_or_default())
                     .unwrap_or_default();

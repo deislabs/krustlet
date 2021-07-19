@@ -29,24 +29,21 @@ impl ContainerStatusExpectation<'_> {
     }
 
     fn verify_terminated(
-        actual_statuses: &Option<Vec<ContainerStatus>>,
+        actual_statuses: &[ContainerStatus],
         container_name: &str,
         expected: &str,
     ) -> anyhow::Result<()> {
-        match actual_statuses {
-            None => Err(anyhow::anyhow!("Expected statuses section not present")),
-            Some(statuses) => match statuses.iter().find(|s| s.name == container_name) {
+        match actual_statuses.iter().find(|s| s.name == container_name) {
+            None => Err(anyhow::anyhow!(
+                "Expected {} present but it wasn't",
+                container_name
+            )),
+            Some(status) => match &status.state {
                 None => Err(anyhow::anyhow!(
-                    "Expected {} present but it wasn't",
+                    "Expected {} to have state but it didn't",
                     container_name
                 )),
-                Some(status) => match &status.state {
-                    None => Err(anyhow::anyhow!(
-                        "Expected {} to have state but it didn't",
-                        container_name
-                    )),
-                    Some(state) => Self::verify_terminated_state(&state, container_name, expected),
-                },
+                Some(state) => Self::verify_terminated_state(&state, container_name, expected),
             },
         }
     }
@@ -83,18 +80,15 @@ impl ContainerStatusExpectation<'_> {
     }
 
     fn verify_not_present(
-        actual_statuses: &Option<Vec<ContainerStatus>>,
+        actual_statuses: &[ContainerStatus],
         container_name: &str,
     ) -> anyhow::Result<()> {
-        match actual_statuses {
+        match actual_statuses.iter().find(|s| s.name == container_name) {
             None => Ok(()),
-            Some(statuses) => match statuses.iter().find(|s| s.name == container_name) {
-                None => Ok(()),
-                Some(_) => Err(anyhow::anyhow!(
-                    "Expected {} not present but it was",
-                    container_name
-                )),
-            },
+            Some(_) => Err(anyhow::anyhow!(
+                "Expected {} not present but it was",
+                container_name
+            )),
         }
     }
 }

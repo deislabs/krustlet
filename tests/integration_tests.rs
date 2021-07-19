@@ -40,17 +40,12 @@ async fn verify_wasi_node(node: Node) {
     assert_eq!(
         node_meta
             .labels
-            .expect("node had no labels")
             .get("kubernetes.io/arch")
             .expect("node did not have kubernetes.io/arch label"),
         "wasm32-wasi"
     );
 
-    let taints = node
-        .spec
-        .expect("node had no spec")
-        .taints
-        .expect("node had no taints");
+    let taints = node.spec.expect("node had no spec").taints;
     let taint = taints
         .iter()
         .find(|t| (t.key == "kubernetes.io/arch") & (t.effect == "NoExecute"))
@@ -92,6 +87,7 @@ const LOGGY_POD: &str = "loggy-pod";
 const INITY_WASI_POD: &str = "hello-wasi-with-inits";
 const FAILY_INITS_POD: &str = "faily-inits-pod";
 const PRIVATE_REGISTRY_POD: &str = "private-registry-pod";
+const PROJECTED_VOLUME_POD: &str = "projected-volume-pod";
 #[cfg(target_os = "linux")]
 const PVC_MOUNT_POD: &str = "pvc-mount-pod";
 #[cfg(target_os = "linux")]
@@ -760,6 +756,91 @@ async fn test_pull_from_private_registry() -> anyhow::Result<()> {
         .await?;
     assert::pod_container_log_contains(&pods, PRIVATE_REGISTRY_POD, "neatcat", r#"kiki"#).await?;
 
+    Ok(())
+}
+
+async fn create_projected_pod(
+    client: kube::Client,
+    pods: &Api<Pod>,
+    resource_manager: &mut TestResourceManager,
+) -> anyhow::Result<()> {
+    let containers = vec![
+        WasmerciserContainerSpec::named("projected-test").with_args(&[
+            "assert_exists(file:/projected/token)",
+            "read(file:/projected/mysecret)to(var:mysecret)",
+            "read(file:/projected/myval)to(var:myval)",
+            "read(file:/projected/pod_name)to(var:pod_name)",
+            "assert_value(var:mysecret)is(lit:cool-secret)",
+            "assert_value(var:myval)is(lit:cool-configmap)",
+            "assert_value(var:pod_name)is(lit:projected-volume-pod)",
+        ]),
+    ];
+
+    let projected_sources = r#"[
+    {
+        "serviceAccountToken": {
+            "expirationSeconds": 3600,
+            "path": "token"
+        }
+    },
+    {
+        "configMap": {
+            "name": "a-configmap"
+        }
+    },
+    {
+        "secret": {
+            "name": "a-secret"
+        }
+    },
+    {
+        "downwardAPI": {
+            "items": [
+                {
+                    "path": "pod_name",
+                    "fieldRef": {
+                        "fieldPath": "metadata.name"
+                    }
+                }
+            ]
+        }
+    }
+]"#;
+
+    let volumes = vec![WasmerciserVolumeSpec {
+        volume_name: "projected",
+        mount_path: "/projected",
+        source: WasmerciserVolumeSource::Projected(projected_sources),
+    }];
+
+    wasmercise_wasi(
+        PROJECTED_VOLUME_POD,
+        client,
+        pods,
+        vec![],
+        containers,
+        volumes,
+        OnFailure::Panic,
+        resource_manager,
+    )
+    .await
+}
+
+#[tokio::test]
+async fn test_pod_mounts_with_projected() -> anyhow::Result<()> {
+    let test_ns = "wasi-e2e-pod-mounts-with-projected";
+    let (client, pods, mut resource_manager) = set_up_test(test_ns).await?;
+
+    resource_manager
+        .set_up_resources(vec![
+            TestResourceSpec::secret("a-secret", "mysecret", "cool-secret"),
+            TestResourceSpec::config_map("a-configmap", "myval", "cool-configmap"),
+        ])
+        .await?;
+
+    create_projected_pod(client.clone(), &pods, &mut resource_manager).await?;
+
+    assert::pod_exited_successfully(&pods, PROJECTED_VOLUME_POD).await?;
     Ok(())
 }
 
